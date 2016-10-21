@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.core.internal.content;
 
+import java.util.Arrays;
 import java.util.List;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.content.IContentDescription;
@@ -159,6 +160,14 @@ public class ContentTypeSettings implements IContentTypeSettings, IContentTypeIn
 			IStatus status = new Status(IStatus.ERROR, ContentMessages.OWNER_NAME, 0, message, bse);
 			throw new CoreException(status);
 		}
+	}
+
+	@Override
+	public boolean isUserDefined() {
+		return Arrays.asList(
+				context.getNode(ContentType.PREF_USER_DEFINED).get(ContentType.PREF_USER_DEFINED, "") //$NON-NLS-1$
+						.split(",")) //$NON-NLS-1$
+				.contains(contentType.getId());
 	}
 
 }

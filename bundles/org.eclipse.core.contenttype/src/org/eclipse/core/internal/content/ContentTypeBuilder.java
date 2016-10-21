@@ -10,15 +10,12 @@
  *******************************************************************************/
 package org.eclipse.core.internal.content;
 
-import org.eclipse.core.runtime.QualifiedName;
-
 import java.util.*;
 import org.eclipse.core.internal.runtime.RuntimeLog;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.IPreferenceNodeVisitor;
+import org.eclipse.core.runtime.preferences.*;
 import org.eclipse.osgi.util.NLS;
 import org.osgi.service.prefs.BackingStoreException;
 
@@ -85,7 +82,7 @@ public class ContentTypeBuilder {
 	/**
 	 * Builds all content types found in the extension registry.
 	 */
-	public void buildCatalog() {
+	public void buildCatalog(IScopeContext context) {
 		IConfigurationElement[] allContentTypeCEs = getConfigurationElements();
 		for (int i = 0; i < allContentTypeCEs.length; i++)
 			if (allContentTypeCEs[i].getName().equals("content-type")) //$NON-NLS-1$

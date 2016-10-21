@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.eclipse.core.internal.content;
 
-import org.eclipse.core.runtime.QualifiedName;
 import java.io.*;
 import java.util.*;
 import org.eclipse.core.internal.runtime.RuntimeLog;
@@ -52,6 +51,10 @@ public final class ContentType implements IContentType, IContentTypeInfo {
 	public final static String PREF_DEFAULT_CHARSET = "charset"; //$NON-NLS-1$
 	public final static String PREF_FILE_EXTENSIONS = "file-extensions"; //$NON-NLS-1$
 	public final static String PREF_FILE_NAMES = "file-names"; //$NON-NLS-1$
+	/**
+	 * @since 3.6
+	 */
+	public static final String PREF_USER_DEFINED = "userDefined"; //$NON-NLS-1$
 	final static byte PRIORITY_HIGH = 1;
 	final static byte PRIORITY_LOW = -1;
 	final static byte PRIORITY_NORMAL = 0;
@@ -73,6 +76,7 @@ public final class ContentType implements IContentType, IContentTypeInfo {
 	String id;
 	private ContentTypeManager manager;
 	private String name;
+	private boolean userDefined;
 	private byte priority;
 	private ContentType target;
 	private String userCharset;
@@ -607,6 +611,11 @@ public final class ContentType implements IContentType, IContentTypeInfo {
 
 	void setBaseType(ContentType baseType) {
 		this.baseType = baseType;
+	}
+
+	@Override
+	public boolean isUserDefined() {
+		return this.userDefined;
 	}
 
 }

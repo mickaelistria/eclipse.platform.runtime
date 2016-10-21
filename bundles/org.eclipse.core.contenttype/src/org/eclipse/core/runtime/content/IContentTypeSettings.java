@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.preferences.IScopeContext;
  * @see IContentType
  * @see IContentType#getSettings(IScopeContext)
  * @since 3.1
+ * @noimplement This interface is not intended to be implemented by clients.
  */
 public interface IContentTypeSettings {
 	/**
@@ -115,4 +116,10 @@ public interface IContentTypeSettings {
 	 * </ul>
 	 */
 	public void setDefaultCharset(String userCharset) throws CoreException;
+
+	/**
+	 * @return whether the content-type was defined by user
+	 * @since 3.6
+	 */
+	public boolean isUserDefined();
 }

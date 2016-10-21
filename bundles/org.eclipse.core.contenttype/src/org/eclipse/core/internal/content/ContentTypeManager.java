@@ -13,9 +13,14 @@ package org.eclipse.core.internal.content;
 
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.content.*;
 import org.eclipse.core.runtime.preferences.*;
+import org.eclipse.osgi.util.NLS;
+import org.osgi.service.prefs.BackingStoreException;
 
 public class ContentTypeManager extends ContentTypeMatcher implements IContentTypeManager {
 	private static ContentTypeManager instance;
@@ -140,7 +145,7 @@ public class ContentTypeManager extends ContentTypeMatcher implements IContentTy
 		// build catalog by parsing the extension registry
 		ContentTypeBuilder builder = createBuilder(newCatalog);
 		try {
-			builder.buildCatalog();
+			builder.buildCatalog(getContext());
 			// only remember catalog if building it was successful
 			catalog = newCatalog;
 		} catch (InvalidRegistryObjectException e) {
@@ -212,5 +217,61 @@ public class ContentTypeManager extends ContentTypeMatcher implements IContentTy
 	public IContentDescription getSpecificDescription(BasicDescription description) {
 		// this is the platform content type manager, no specificities
 		return description;
+	}
+
+	@Override
+	public void removeContentType(IContentType contentType) throws CoreException {
+		if (contentType.getSettings(getContext()).isUserDefined()) {
+			throw new IllegalArgumentException("content type must be user-defined."); //$NON-NLS-1$
+		}
+		if (!contentType.isUserDefined()) {
+			throw new IllegalArgumentException("Can only delete content-types defined by users."); //$NON-NLS-1$
+		}
+		getCatalog().removeContentType(contentType);
+		// remove preferences for this content type
+		String currentUserDefined = getContext().getNode(ContentType.PREF_USER_DEFINED)
+				.get(ContentType.PREF_USER_DEFINED, "");//$NON-NLS-1$
+		List<String> userDefinedIds = Arrays.asList(currentUserDefined.split(",")); //$NON-NLS-1$
+		userDefinedIds.remove(contentType.getId());
+		getContext().getNode(ContentType.PREF_USER_DEFINED).put(ContentType.PREF_USER_DEFINED,
+				userDefinedIds.stream().collect(Collectors.joining(","))); //$NON-NLS-1$
+		try {
+			getContext().getNode(ContentType.PREF_USER_DEFINED).flush();
+		} catch (BackingStoreException bse) {
+			String message = NLS.bind(ContentMessages.content_errorSavingSettings, contentType.getId());
+			IStatus status = new Status(IStatus.ERROR, ContentMessages.OWNER_NAME, 0, message, bse);
+			throw new CoreException(status);
+		}
+	}
+
+	@Override
+	public IContentType addContentType(String id, String name, IContentType baseType) throws CoreException {
+		if (id == null) {
+			throw new IllegalArgumentException("content-type 'id' mustn't be null");//$NON-NLS-1$
+		}
+		if (id.contains(",")) { //$NON-NLS-1$
+			throw new IllegalAccessError("Content-Type id mustn't contain ','"); //$NON-NLS-1$
+		}
+		if (getContentType(id) != null) {
+			throw new IllegalArgumentException("content-type '" + id + "' already exists.");//$NON-NLS-1$ //$NON-NLS-2$
+		}
+		ContentType contentType = ContentType.createContentType(getCatalog(), id, name, (byte) 0, new String[0],
+				new String[0], baseType.getId(), null, null, null);
+		getCatalog().addContentType(contentType);
+		// add preferences for this content type
+		String currentUserDefined = getContext().getNode(ContentType.PREF_USER_DEFINED)
+				.get(ContentType.PREF_USER_DEFINED, "");//$NON-NLS-1$
+		if (currentUserDefined.length() > 0) {
+			currentUserDefined += ",";//$NON-NLS-1$
+		}
+		getContext().getNode(ContentType.PREF_USER_DEFINED).put(ContentType.PREF_USER_DEFINED, currentUserDefined + id);
+		try {
+			getContext().getNode(ContentType.PREF_USER_DEFINED).flush();
+		} catch (BackingStoreException bse) {
+			String message = NLS.bind(ContentMessages.content_errorSavingSettings, id);
+			IStatus status = new Status(IStatus.ERROR, ContentMessages.OWNER_NAME, 0, message, bse);
+			throw new CoreException(status);
+		}
+		return contentType;
 	}
 }

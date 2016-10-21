@@ -10,10 +10,6 @@
  *******************************************************************************/
 package org.eclipse.core.internal.content;
 
-import java.util.Iterator;
-
-import java.util.Set;
-import org.eclipse.core.runtime.content.IContentType;
 import java.io.*;
 import java.util.*;
 import org.eclipse.core.runtime.*;
@@ -607,4 +603,12 @@ public final class ContentTypeCatalog {
 		}
 		return destination;
 	}
+
+	void removeContentType(IContentType contentType) throws CoreException {
+		if (contentType.getSettings(getManager().getContext()).isUserDefined()) {
+			throw new IllegalArgumentException("content type must be user-defined."); //$NON-NLS-1$
+		}
+		contentTypes.remove(contentType.getId());
+	}
+
 }

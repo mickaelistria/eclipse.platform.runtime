@@ -11,6 +11,7 @@
 package org.eclipse.core.runtime.content;
 
 import java.util.EventObject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IScopeContext;
 
 /**
@@ -22,6 +23,7 @@ import org.eclipse.core.runtime.preferences.IScopeContext;
  *
  * @see org.eclipse.core.runtime.content.IContentTypeMatcher
  * @since 3.0
+ * @noimplement This interface is not intended to be implemented by clients.
  */
 public interface IContentTypeManager extends IContentTypeMatcher {
 
@@ -215,4 +217,32 @@ public interface IContentTypeManager extends IContentTypeMatcher {
 	 * @see IContentTypeManager.IContentTypeChangeListener
 	 */
 	public void removeContentTypeChangeListener(IContentTypeChangeListener listener);
+
+	/**
+	 * Removes the content-type from internal registry.
+	 *
+	 * @param id
+	 *            the non-null content-type id
+	 * @param name
+	 *            the non-null user readable name
+	 * @param baseType
+	 *            parent base type. May be null.
+	 * @return the newly created and registered content-type
+	 * @throws IllegalArgumentException
+	 *             if one of the non-null arguments is null, or id is already
+	 *             used by another content-type
+	 *
+	 *             TODO move to a IContentTypeManagerExtension interface
+	 */
+	public IContentType addContentType(String id, String name, IContentType baseType) throws CoreException;
+
+	/**
+	 * Remove a content-type from underlying registry.
+	 *
+	 * @param contentType
+	 *            the content-type to remove.
+	 *
+	 *            TODO move to a IContentTypeManagerExtension interface
+	 */
+	public void removeContentType(IContentType contentType) throws CoreException;
 }
